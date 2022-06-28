@@ -23,6 +23,18 @@ class TransferType(IntEnum):
     VEHICLE_CONTINUATION = 5
 
 
+class PickupType(IntEnum):
+    REGULARLY_SCHEDULED = 0
+    NO_PICKUP = 1
+    PHONE_AGENCY = 2
+    COORDINATE_WITH_DRIVER = 3
+
+class DropOffType(IntEnum):
+    REGULARLY_SCHEDULED = 0
+    NO_DROP_OFF = 1
+    PHONE_AGENCY = 2
+    COORDINATE_WITH_DRIVER = 3
+
 class Calendar(Entity):
     _schema = File(id='service_id', name='calendar', required=False)
 
@@ -154,7 +166,15 @@ class StopTime(Entity):
     stop_sequence: int
     arrival_time: GTFSTime = GTFSTime('')
     departure_time: GTFSTime = GTFSTime('')
-
+    start_pickup_dropoff_window: GTFSTime = GTFSTime('')
+    end_pickup_dropoff_window: GTFSTime = GTFSTime('')
+    pickup_type: PickupType = PickupType.REGULARLY_SCHEDULED; 
+    drop_off_type: DropOffType = DropOffType.REGULARLY_SCHEDULED
+    mean_duration_factor: float = -1
+    mean_duration_offset: float = -1
+    safe_duration_factor: float = -1
+    safe_duration_offset: float = -1
+    
     @property
     def stop(self):
         return self._gtfs.stops[self.stop_id]

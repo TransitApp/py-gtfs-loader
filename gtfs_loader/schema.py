@@ -179,6 +179,15 @@ class StopTime(Entity):
     def stop(self):
         return self._gtfs.stops[self.stop_id]
 
+class LocationGroups(Entity):
+    _schema = File(id='location_group_id', 
+                   name='location_groups',
+                   required=False,
+                   group_id='location_id')
+
+    location_group_id: str
+    location_id: str = ''
+    location_group_name: str = ''
 
 GTFS_SUBSET_SCHEMA = Schema(Calendar, CalendarDate, Trip, Stop, Transfer,
-                            StopTime)
+                            StopTime, LocationGroups)

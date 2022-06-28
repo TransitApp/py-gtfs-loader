@@ -1,0 +1,10 @@
+*.pyc
+.cache/
+.DS_Store
+*.egg-info
+.idea/
+.*.sw*
+.vscode/
+tests/.work/
+build/
+dist/

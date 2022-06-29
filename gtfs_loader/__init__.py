@@ -28,14 +28,14 @@ def load(gtfs_dir):
                 continue
 
         if file_schema.fileType is schema_classes.FileType.CSV:
-            load_csv(gtfs_dir, gtfs, filepath, file_schema)
+            load_csv(gtfs, filepath, file_schema)
         elif file_schema.fileType is schema_classes.FileType.GEOJSON:
-            load_json(gtfs_dir, gtfs, filepath, file_schema)
+            load_json(gtfs, filepath, file_schema)
 
     return gtfs
 
 
-def load_csv(gtfs_dir, gtfs, filepath, file_schema):
+def load_csv(gtfs, filepath, file_schema):
     with open(filepath, 'r', encoding='utf-8-sig') as f:
         reader = csv.reader(f, skipinitialspace=True)
         header_row = next(reader, None)
@@ -58,7 +58,7 @@ def load_csv(gtfs_dir, gtfs, filepath, file_schema):
                                                       file_schema,
                                                       entities))
 
-def load_json(gtfs_dir, gtfs, filepath, file_schema):
+def load_json(gtfs, filepath, file_schema):
     with open(filepath, 'r', encoding='utf-8-sig') as f:
         gtfs[file_schema.name] = json.load(f)
 

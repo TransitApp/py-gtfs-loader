@@ -9,9 +9,29 @@ from .lat_lon import LatLon
 DAY_SEC = 86400
 
 
+class DropOffType(IntEnum):
+    REGULARLY_SCHEDULED = 0
+    NO_DROP_OFF = 1
+    PHONE_AGENCY = 2
+    COORDINATE_WITH_DRIVER = 3
+
+
+class BookingRule(IntEnum):
+    REAL_TIME = 0
+    SAME_DAY = 1
+    UP_TO_PRIOR_DAYS = 2
+
+
 class ExceptionType(IntEnum):
     ADD = 1
     REMOVE = 2
+
+
+class PickupType(IntEnum):
+    REGULARLY_SCHEDULED = 0
+    NO_PICKUP = 1
+    PHONE_AGENCY = 2
+    COORDINATE_WITH_DRIVER = 3
 
 
 class TransferType(IntEnum):
@@ -23,17 +43,43 @@ class TransferType(IntEnum):
     VEHICLE_CONTINUATION = 5
 
 
-class PickupType(IntEnum):
-    REGULARLY_SCHEDULED = 0
-    NO_PICKUP = 1
-    PHONE_AGENCY = 2
-    COORDINATE_WITH_DRIVER = 3
+class Agency(Entity):
+    _schema = File(id='agency_id',
+                   fileType=FileType.CSV, 
+                   name='agency', 
+                   required=True)
 
-class DropOffType(IntEnum):
-    REGULARLY_SCHEDULED = 0
-    NO_DROP_OFF = 1
-    PHONE_AGENCY = 2
-    COORDINATE_WITH_DRIVER = 3
+    agency_id: str
+    agency_name: str
+    agency_url: str
+    agency_timezone: str
+    agency_lang: str = ''
+    agency_phone: str = ''
+    agency_fare_url: str = ''
+    agency_email: str = ''
+
+class BookingRule(Entity):
+    _schema = File(id='booking_rule_id',
+                   fileType=FileType.CSV, 
+                   name='booking_rule', 
+                   required=False)
+
+    booking_rule_id: str
+    booking_type: BookingRule
+    prior_notice_duration_min: int = 0
+    prior_notice_duration_max: int = 0
+    prior_notice_last_day: int = 0
+    prior_notice_last_time: GTFSTime = GTFSTime('')
+    prior_notice_start_day: int = 0
+    prior_notice_start_time: GTFSTime = GTFSTime('')
+    prior_notice_service_id: str = ''
+    message: str = ''
+    pickup_message: str = ''
+    drop_off_message: str = ''
+    phone_number: str = ''
+    info_url: str = ''
+    booking_url: str = ''
+
 
 class Calendar(Entity):
     _schema = File(id='service_id', 
@@ -212,5 +258,5 @@ class Locations(Entity):
     type: str 
     features: str
 
-GTFS_SUBSET_SCHEMA = Schema(Calendar, CalendarDate, Trip, Stop, Transfer,
+GTFS_SUBSET_SCHEMA = Schema(Agency, BookingRule, Calendar, CalendarDate, Trip, Stop, Transfer,
                             StopTime, LocationGroups, Locations)

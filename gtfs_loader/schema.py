@@ -36,7 +36,10 @@ class DropOffType(IntEnum):
     COORDINATE_WITH_DRIVER = 3
 
 class Calendar(Entity):
-    _schema = File(id='service_id', name='calendar', required=False)
+    _schema = File(id='service_id', 
+                   fileType=FileType.CSV, 
+                   name='calendar', 
+                   required=False)
 
     service_id: str
     monday: bool
@@ -53,6 +56,7 @@ class Calendar(Entity):
 class CalendarDate(Entity):
     _schema = File(id='service_id',
                    name='calendar_dates',
+                   fileType=FileType.CSV,
                    group_id='date',
                    required=False)
 
@@ -62,7 +66,10 @@ class CalendarDate(Entity):
 
 
 class Trip(Entity):
-    _schema = File(id='trip_id', name='trips', required=True)
+    _schema = File(id='trip_id', 
+                   fileType=FileType.CSV, 
+                   name='trips', 
+                   required=True)
 
     trip_id: str
     service_id: str
@@ -110,6 +117,7 @@ class Trip(Entity):
 class Shape(Entity):
     _schema = File(id='shape_id',
                    name='shapes',
+                   fileType=FileType.CSV,
                    required=False,
                    group_id='shape_pt_sequence')
 
@@ -120,7 +128,10 @@ class Shape(Entity):
 
 
 class Stop(Entity):
-    _schema = File(id='stop_id', name='stops', required=True)
+    _schema = File(id='stop_id', 
+                   name='stops', 
+                   fileType=FileType.CSV, 
+                   required=True)
 
     stop_id: str
     stop_lat: Optional[float] = None
@@ -137,6 +148,7 @@ class Stop(Entity):
 class Transfer(Entity):
     _schema = File(id='from_trip_id',
                    name='transfers',
+                   fileType=FileType.CSV,
                    required=False,
                    group_id='to_trip_id')
 
@@ -158,6 +170,7 @@ class Transfer(Entity):
 class StopTime(Entity):
     _schema = File(id='trip_id',
                    name='stop_times',
+                   fileType=FileType.CSV,
                    required=True,
                    group_id='stop_sequence')
 
@@ -182,6 +195,7 @@ class StopTime(Entity):
 class LocationGroups(Entity):
     _schema = File(id='location_group_id', 
                    name='location_groups',
+                   fileType=FileType.CSV,
                    required=False,
                    group_id='location_id')
 
@@ -189,5 +203,14 @@ class LocationGroups(Entity):
     location_id: str = ''
     location_group_name: str = ''
 
+class Locations(Entity):
+    _schema = File(id='id',
+                   name='locations',
+                   fileType=FileType.GEOJSON,
+                   required=False)
+
+    type: str 
+    features: str
+
 GTFS_SUBSET_SCHEMA = Schema(Calendar, CalendarDate, Trip, Stop, Transfer,
-                            StopTime, LocationGroups)
+                            StopTime, LocationGroups, Locations)

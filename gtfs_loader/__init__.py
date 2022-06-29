@@ -1,5 +1,6 @@
 import csv
 import enum
+import json
 import shutil
 import typing
 from pathlib import Path
@@ -26,31 +27,42 @@ def load(gtfs_dir):
             else:
                 continue
 
-        with open(filepath, 'r', encoding='utf-8-sig') as f:
-            reader = csv.reader(f, skipinitialspace=True)
-            header_row = next(reader, None)
-            if not header_row:
-                if file_schema.required:
-                    raise ParseError(
-                        f'{file_schema.filename}: required file is empty')
-                else:
-                    continue
-
-            resolved_fields = merge_header_and_declared_fields(
-                file_schema, header_row)
-            entities = {}
-            for entity in parse_rows(gtfs, file_schema, resolved_fields,
-                                     header_row, reader):
-                index_entity(file_schema, entities, entity)
-
-            gtfs[file_schema.name] = types.EntityDict(fields=resolved_fields,
-                                                      values=sorted_entities(
-                                                          file_schema,
-                                                          entities))
+        if file_schema.fileType is schema_classes.FileType.CSV:
+            load_csv(gtfs_dir, gtfs, filepath, file_schema)
+        elif file_schema.fileType is schema_classes.FileType.GEOJSON:
+            load_json(gtfs_dir, gtfs, filepath, file_schema)
 
     return gtfs
 
 
+def load_csv(gtfs_dir, gtfs, filepath, file_schema):
+    with open(filepath, 'r', encoding='utf-8-sig') as f:
+        reader = csv.reader(f, skipinitialspace=True)
+        header_row = next(reader, None)
+        if not header_row:
+            if file_schema.required:
+                raise ParseError(
+                    f'{file_schema.filename}: required file is empty')
+            else:
+                return
+
+        resolved_fields = merge_header_and_declared_fields(
+            file_schema, header_row)
+        entities = {}
+        for entity in parse_rows(gtfs, file_schema, resolved_fields,
+                                 header_row, reader):
+            index_entity(file_schema, entities, entity)
+
+        gtfs[file_schema.name] = types.EntityDict(fields=resolved_fields,
+                                                  values=sorted_entities(
+                                                      file_schema,
+                                                      entities))
+
+def load_json(gtfs_dir, gtfs, filepath, file_schema):
+    with open(filepath, 'r', encoding='utf-8-sig') as f:
+        gtfs[file_schema.name] = json.load(f)
+
+                                                          
 def merge_header_and_declared_fields(file_schema, header_row):
     declared_fields = file_schema.get_declared_fields()
     fields = {}

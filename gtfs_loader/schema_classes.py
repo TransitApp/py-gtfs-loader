@@ -1,13 +1,18 @@
 from collections import namedtuple
+from enum import IntEnum
 
 Field = namedtuple('Field', ('type', 'required', 'default'))
 
+class FileType(IntEnum):
+    CSV = 0
+    GEOJSON = 1
 
 class File:
 
     def __init__(self,
                  id,
                  name,
+                 fileType, 
                  filename=None,
                  required=True,
                  group_id=None,
@@ -18,9 +23,12 @@ class File:
         # Objects will appear under gtfs."name"
         self.name = name
 
+        # Specify if the file is a csv or a json
+        self.fileType = fileType; 
+
         # Objects will be read from "filename".txt
         # If unset, the entity name shall be used instead
-        self.filename = filename if filename else name + ".txt"
+        self.filename = filename if filename else name + File._get_file_ext(fileType)
 
         # If this file is absent from the GTFS directory, should process abort?
         self.required = required
@@ -42,6 +50,14 @@ class File:
                      default=self.class_def.__dict__.get(k))
             for k, v in self.class_def.__annotations__.items()
         }
+
+    @staticmethod
+    def _get_file_ext(fileType):
+        if fileType is FileType.CSV:
+            return ".txt"
+        
+        if fileType is FileType.GEOJSON:
+            return ".geojson"
 
 
 class Schema:

@@ -111,6 +111,28 @@ class CalendarDate(Entity):
     exception_type: ExceptionType
 
 
+class LocationGroups(Entity):
+    _schema = File(id='location_group_id', 
+                   name='location_groups',
+                   fileType=FileType.CSV,
+                   required=False,
+                   group_id='location_id')
+
+    location_group_id: str
+    location_id: str = ''
+    location_group_name: str = ''
+
+
+class Locations(Entity):
+    _schema = File(id='id',
+                   name='locations',
+                   fileType=FileType.GEOJSON,
+                   required=False)
+
+    type: str 
+    features: str
+
+
 class Trip(Entity):
     _schema = File(id='trip_id', 
                    fileType=FileType.CSV, 
@@ -238,25 +260,6 @@ class StopTime(Entity):
     def stop(self):
         return self._gtfs.stops[self.stop_id]
 
-class LocationGroups(Entity):
-    _schema = File(id='location_group_id', 
-                   name='location_groups',
-                   fileType=FileType.CSV,
-                   required=False,
-                   group_id='location_id')
-
-    location_group_id: str
-    location_id: str = ''
-    location_group_name: str = ''
-
-class Locations(Entity):
-    _schema = File(id='id',
-                   name='locations',
-                   fileType=FileType.GEOJSON,
-                   required=False)
-
-    type: str 
-    features: str
 
 GTFS_SUBSET_SCHEMA = Schema(Agency, BookingRule, Calendar, CalendarDate, Trip, Stop, Transfer,
                             StopTime, LocationGroups, Locations)

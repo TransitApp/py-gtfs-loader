@@ -22,6 +22,20 @@ class BookingRule(IntEnum):
     UP_TO_PRIOR_DAYS = 2
 
 
+class ContinuousPickup(IntEnum):
+    CONTINUOUS = 0
+    NO_CONTINOUS = 1
+    PHONE_AGENCY = 2
+    COORDINATE_WITH_DRIVER = 3
+
+
+class ContinuousDropOff(IntEnum):
+    CONTINUOUS = 0
+    NO_CONTINOUS = 1
+    PHONE_AGENCY = 2
+    COORDINATE_WITH_DRIVER = 3
+
+
 class ExceptionType(IntEnum):
     ADD = 1
     REMOVE = 2
@@ -32,6 +46,19 @@ class PickupType(IntEnum):
     NO_PICKUP = 1
     PHONE_AGENCY = 2
     COORDINATE_WITH_DRIVER = 3
+
+
+class RouteType(IntEnum):
+    TRAM = 0
+    SUBWAY = 1
+    RAIL = 2
+    BUS = 3
+    FERRY = 4
+    CABLE_TRAM = 5
+    AERIAL_LIFT = 6
+    FUNICULAR = 7
+    TROLLEYBUS = 11
+    MONORAIL = 0
 
 
 class TransferType(IntEnum):
@@ -45,8 +72,8 @@ class TransferType(IntEnum):
 
 class Agency(Entity):
     _schema = File(id='agency_id',
-                   fileType=FileType.CSV, 
-                   name='agency', 
+                   fileType=FileType.CSV,
+                   name='agency',
                    required=True)
 
     agency_id: str
@@ -58,10 +85,11 @@ class Agency(Entity):
     agency_fare_url: str = ''
     agency_email: str = ''
 
+
 class BookingRule(Entity):
     _schema = File(id='booking_rule_id',
-                   fileType=FileType.CSV, 
-                   name='booking_rule', 
+                   fileType=FileType.CSV,
+                   name='booking_rule',
                    required=False)
 
     booking_rule_id: str
@@ -82,9 +110,9 @@ class BookingRule(Entity):
 
 
 class Calendar(Entity):
-    _schema = File(id='service_id', 
-                   fileType=FileType.CSV, 
-                   name='calendar', 
+    _schema = File(id='service_id',
+                   fileType=FileType.CSV,
+                   name='calendar',
                    required=False)
 
     service_id: str
@@ -112,7 +140,7 @@ class CalendarDate(Entity):
 
 
 class LocationGroups(Entity):
-    _schema = File(id='location_group_id', 
+    _schema = File(id='location_group_id',
                    name='location_groups',
                    fileType=FileType.CSV,
                    required=False,
@@ -129,14 +157,35 @@ class Locations(Entity):
                    fileType=FileType.GEOJSON,
                    required=False)
 
-    type: str 
+    type: str
     features: str
 
 
+class Routes(Entity):
+    _schema = File(id='route_id',
+                   name='routes',
+                   fileType=FileType.CSV,
+                   required=True)
+
+    route_id: str
+    agency_id: str = ''
+    route_short_name: str = ''
+    route_long_name: str = ''
+    route_desc: str = ''
+    route_type: RouteType
+    route_url: str = ''
+    route_color: str = ''
+    route_text_color: str = ''
+    route_sort_order: str = ''
+    continuous_pickup: ContinuousPickup = ContinuousPickup.NO_CONTINOUS
+    continuous_drop_off: ContinuousDropOff = ContinuousDropOff.NO_CONTINOUS
+    network_id: str = ''
+
+
 class Trip(Entity):
-    _schema = File(id='trip_id', 
-                   fileType=FileType.CSV, 
-                   name='trips', 
+    _schema = File(id='trip_id',
+                   fileType=FileType.CSV,
+                   name='trips',
                    required=True)
 
     trip_id: str
@@ -196,9 +245,9 @@ class Shape(Entity):
 
 
 class Stop(Entity):
-    _schema = File(id='stop_id', 
-                   name='stops', 
-                   fileType=FileType.CSV, 
+    _schema = File(id='stop_id',
+                   name='stops',
+                   fileType=FileType.CSV,
                    required=True)
 
     stop_id: str
@@ -249,17 +298,17 @@ class StopTime(Entity):
     departure_time: GTFSTime = GTFSTime('')
     start_pickup_dropoff_window: GTFSTime = GTFSTime('')
     end_pickup_dropoff_window: GTFSTime = GTFSTime('')
-    pickup_type: PickupType = PickupType.REGULARLY_SCHEDULED; 
+    pickup_type: PickupType = PickupType.REGULARLY_SCHEDULED
     drop_off_type: DropOffType = DropOffType.REGULARLY_SCHEDULED
     mean_duration_factor: float = -1
     mean_duration_offset: float = -1
     safe_duration_factor: float = -1
     safe_duration_offset: float = -1
-    
+
     @property
     def stop(self):
         return self._gtfs.stops[self.stop_id]
 
 
-GTFS_SUBSET_SCHEMA = Schema(Agency, BookingRule, Calendar, CalendarDate, Trip, Stop, Transfer,
-                            StopTime, LocationGroups, Locations)
+GTFS_SUBSET_SCHEMA = Schema(Agency, BookingRule, Calendar, CalendarDate,
+                            Locations, LocationGroups, Routes, Transfer, Trip, Stop, StopTime)

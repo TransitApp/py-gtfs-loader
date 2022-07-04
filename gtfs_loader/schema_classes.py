@@ -3,33 +3,14 @@ from enum import IntEnum
 
 Field = namedtuple('Field', ('type', 'required', 'default'))
 
+
 class FileType(IntEnum):
     CSV = 0
     GEOJSON = 1
 
-class File:
 
-    def __init__(self,
-                 id,
-                 name,
-                 fileType, 
-                 filename=None,
-                 required=True,
-                 group_id=None,
-                 inner_dict=False):
-        # Primary key for this file, serves as the key of the generated dict
-        self.id = id
-
-        # Objects will appear under gtfs."name"
-        self.name = name
-
-        # Specify if the file is a csv or a json
-        self.fileType = fileType; 
-
-        # Objects will be read from "filename".txt
-        # If unset, the entity name shall be used instead
-        self.filename = filename if filename else name + File._get_file_ext(fileType)
-
+class Schema:
+    def __init__(self, required=True, group_id=None, inner_dict=False):
         # If this file is absent from the GTFS directory, should process abort?
         self.required = required
 
@@ -51,16 +32,43 @@ class File:
             for k, v in self.class_def.__annotations__.items()
         }
 
+
+class File(Schema):
+
+    def __init__(self,
+                 id,
+                 name,
+                 fileType,
+                 filename=None,
+                 required=True,
+                 group_id=None,
+                 inner_dict=False):
+
+        super().__init__(required, group_id, inner_dict)
+        # Primary key for this file, serves as the key of the generated dict
+        self.id = id
+
+        # Objects will appear under gtfs."name"
+        self.name = name
+
+        # Specify if the file is a csv or a json
+        self.fileType = fileType
+
+        # Objects will be read from "filename".txt
+        # If unset, the entity name shall be used instead
+        self.filename = filename if filename else name + \
+            File._get_file_ext(fileType)
+
     @staticmethod
     def _get_file_ext(fileType):
         if fileType is FileType.CSV:
             return ".txt"
-        
+
         if fileType is FileType.GEOJSON:
             return ".geojson"
 
 
-class Schema:
+class FileCollection:
 
     def __init__(self, *args):
         self.entities = {}
@@ -76,3 +84,10 @@ class Schema:
 
     def __getitem__(self, item):
         return self.entities[item]
+
+
+class SchemaCollection:
+
+    def __init__(self, *args):
+        for file in args:
+            file._schema.class_def = file

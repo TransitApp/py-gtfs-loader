@@ -58,11 +58,47 @@ def load_csv(gtfs, filepath, file_schema):
                                                       file_schema,
                                                       entities))
 
+
 def load_json(gtfs, filepath, file_schema):
     with open(filepath, 'r', encoding='utf-8-sig') as f:
-        gtfs[file_schema.name] = json.load(f)
+        json_data = json.load(f)
 
-                                                          
+        gtfs[file_schema.name] = visit_json(json_data, file_schema.class_def())
+
+
+def visit_json(json_data, expected_type, type_config=None):
+    if isinstance(json_data, dict):
+        file_schema = expected_type._schema
+        declared_fields = file_schema.get_declared_fields()
+        output = file_schema.class_def()
+
+        for name, config in declared_fields.items():
+            value = json_data.get(name, None)
+
+            if config.required and value is None:
+                raise ParseError(
+                    f'{expected_type.__name__} missing required field {name}')
+
+            output[name] = visit_json(value, config.type, config)
+
+        return output
+    elif isinstance(json_data, list):
+        output = []
+        for value in json_data:
+            inner_type = get_inner_type(expected_type)
+            output.append(visit_json(value, inner_type))
+
+        return output
+    else:
+        if type_config is not None and not type_config.required and json_data == None:
+            return type_config.default
+
+        if expected_type is typing.Any:
+            return json_data
+
+        return expected_type(json_data)
+
+
 def merge_header_and_declared_fields(file_schema, header_row):
     declared_fields = file_schema.get_declared_fields()
     fields = {}
@@ -124,6 +160,9 @@ def convert(config, value):
 
 
 def get_inner_type(config_type):
+    if typing.get_origin(config_type) is list:
+        return typing.get_args(config_type)[0]
+
     if typing.get_origin(config_type) is not typing.Union:
         return config_type
 

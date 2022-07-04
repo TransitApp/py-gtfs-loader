@@ -1,19 +1,12 @@
 import math
 from enum import IntEnum
 from functools import cached_property
-from typing import Optional
+from typing import Optional, List
 from .schema_classes import *
 from .types import *
 from .lat_lon import LatLon
 
 DAY_SEC = 86400
-
-
-class DropOffType(IntEnum):
-    REGULARLY_SCHEDULED = 0
-    NO_DROP_OFF = 1
-    PHONE_AGENCY = 2
-    COORDINATE_WITH_DRIVER = 3
 
 
 class BookingRule(IntEnum):
@@ -32,6 +25,13 @@ class ContinuousPickup(IntEnum):
 class ContinuousDropOff(IntEnum):
     CONTINUOUS = 0
     NO_CONTINOUS = 1
+    PHONE_AGENCY = 2
+    COORDINATE_WITH_DRIVER = 3
+
+
+class DropOffType(IntEnum):
+    REGULARLY_SCHEDULED = 0
+    NO_DROP_OFF = 1
     PHONE_AGENCY = 2
     COORDINATE_WITH_DRIVER = 3
 
@@ -158,7 +158,7 @@ class Locations(Entity):
                    required=False)
 
     type: str
-    features: str
+    features: List[Feature]
 
 
 class Routes(Entity):
@@ -180,6 +180,86 @@ class Routes(Entity):
     continuous_pickup: ContinuousPickup = ContinuousPickup.NO_CONTINOUS
     continuous_drop_off: ContinuousDropOff = ContinuousDropOff.NO_CONTINOUS
     network_id: str = ''
+
+
+# Currently not parsed for performance reasons
+class Shape(Entity):
+    _schema = File(id='shape_id',
+                   name='shapes',
+                   fileType=FileType.CSV,
+                   required=False,
+                   group_id='shape_pt_sequence')
+
+    shape_id: str
+    shape_pt_sequence: int
+    shape_pt_lat: float
+    shape_pt_lon: float
+
+
+class Stop(Entity):
+    _schema = File(id='stop_id',
+                   name='stops',
+                   fileType=FileType.CSV,
+                   required=True)
+
+    stop_id: str
+    stop_lat: Optional[float] = None
+    stop_lon: Optional[float] = None
+
+    @cached_property
+    def location(self):
+        if self.stop_lat is None or self.stop_lon is None:
+            raise ValueError(f'Stop {self.stop_id} missing location')
+
+        return LatLon(self.stop_lat, self.stop_lon)
+
+
+class StopTime(Entity):
+    _schema = File(id='trip_id',
+                   name='stop_times',
+                   fileType=FileType.CSV,
+                   required=True,
+                   group_id='stop_sequence')
+
+    trip_id: str
+    stop_id: str
+    stop_sequence: int
+    arrival_time: GTFSTime = GTFSTime('')
+    departure_time: GTFSTime = GTFSTime('')
+    start_pickup_dropoff_window: GTFSTime = GTFSTime('')
+    end_pickup_dropoff_window: GTFSTime = GTFSTime('')
+    pickup_type: PickupType = PickupType.REGULARLY_SCHEDULED
+    drop_off_type: DropOffType = DropOffType.REGULARLY_SCHEDULED
+    mean_duration_factor: float = -1
+    mean_duration_offset: float = -1
+    safe_duration_factor: float = -1
+    safe_duration_offset: float = -1
+
+    @property
+    def stop(self):
+        return self._gtfs.stops[self.stop_id]
+
+
+class Transfer(Entity):
+    _schema = File(id='from_trip_id',
+                   name='transfers',
+                   fileType=FileType.CSV,
+                   required=False,
+                   group_id='to_trip_id')
+
+    from_trip_id: str = ''
+    to_trip_id: str = ''
+    transfer_type: TransferType = TransferType.RECOMMENDED
+
+    @property
+    def is_continuation(self):
+        return self.transfer_type in {
+            TransferType.IN_SEAT, TransferType.VEHICLE_CONTINUATION
+        }
+
+    @property
+    def is_generated(self):
+        return hasattr(self, '_rank')
 
 
 class Trip(Entity):
@@ -230,85 +310,5 @@ class Trip(Entity):
         return self._gtfs.stops[self.last_stop_time.stop_id].location
 
 
-# Currently not parsed for performance reasons
-class Shape(Entity):
-    _schema = File(id='shape_id',
-                   name='shapes',
-                   fileType=FileType.CSV,
-                   required=False,
-                   group_id='shape_pt_sequence')
-
-    shape_id: str
-    shape_pt_sequence: int
-    shape_pt_lat: float
-    shape_pt_lon: float
-
-
-class Stop(Entity):
-    _schema = File(id='stop_id',
-                   name='stops',
-                   fileType=FileType.CSV,
-                   required=True)
-
-    stop_id: str
-    stop_lat: Optional[float] = None
-    stop_lon: Optional[float] = None
-
-    @cached_property
-    def location(self):
-        if self.stop_lat is None or self.stop_lon is None:
-            raise ValueError(f'Stop {self.stop_id} missing location')
-
-        return LatLon(self.stop_lat, self.stop_lon)
-
-
-class Transfer(Entity):
-    _schema = File(id='from_trip_id',
-                   name='transfers',
-                   fileType=FileType.CSV,
-                   required=False,
-                   group_id='to_trip_id')
-
-    from_trip_id: str = ''
-    to_trip_id: str = ''
-    transfer_type: TransferType = TransferType.RECOMMENDED
-
-    @property
-    def is_continuation(self):
-        return self.transfer_type in {
-            TransferType.IN_SEAT, TransferType.VEHICLE_CONTINUATION
-        }
-
-    @property
-    def is_generated(self):
-        return hasattr(self, '_rank')
-
-
-class StopTime(Entity):
-    _schema = File(id='trip_id',
-                   name='stop_times',
-                   fileType=FileType.CSV,
-                   required=True,
-                   group_id='stop_sequence')
-
-    trip_id: str
-    stop_id: str
-    stop_sequence: int
-    arrival_time: GTFSTime = GTFSTime('')
-    departure_time: GTFSTime = GTFSTime('')
-    start_pickup_dropoff_window: GTFSTime = GTFSTime('')
-    end_pickup_dropoff_window: GTFSTime = GTFSTime('')
-    pickup_type: PickupType = PickupType.REGULARLY_SCHEDULED
-    drop_off_type: DropOffType = DropOffType.REGULARLY_SCHEDULED
-    mean_duration_factor: float = -1
-    mean_duration_offset: float = -1
-    safe_duration_factor: float = -1
-    safe_duration_offset: float = -1
-
-    @property
-    def stop(self):
-        return self._gtfs.stops[self.stop_id]
-
-
-GTFS_SUBSET_SCHEMA = Schema(Agency, BookingRule, Calendar, CalendarDate,
+GTFS_SUBSET_SCHEMA = FileCollection(Agency, BookingRule, Calendar, CalendarDate,
                             Locations, LocationGroups, Routes, Transfer, Trip, Stop, StopTime)

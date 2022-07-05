@@ -1,6 +1,7 @@
 
 from math import *
 
+
 class LatLon:
     # Sources:
     # http://www.movable-type.co.uk/scripts/gis-faq-5.1.html
@@ -39,7 +40,8 @@ class LatLon:
             sin(self.lat) * cos(dist) +
             cos(self.lat) * sin(dist) * cos(bearing))
         lon = self.lon \
-              + atan2(sin(bearing)*sin(dist)*cos(self.lat), cos(dist) - sin(self.lat)*sin(lat))
+            + atan2(sin(bearing)*sin(dist)*cos(self.lat),
+                    cos(dist) - sin(self.lat)*sin(lat))
 
         return LatLon(lat, lon, unit=radians)
 

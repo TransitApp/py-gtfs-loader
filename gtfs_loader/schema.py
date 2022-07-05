@@ -9,7 +9,7 @@ from .lat_lon import LatLon
 DAY_SEC = 86400
 
 
-class BookingRule(IntEnum):
+class BookingType(IntEnum):
     REAL_TIME = 0
     SAME_DAY = 1
     UP_TO_PRIOR_DAYS = 2
@@ -89,11 +89,11 @@ class Agency(Entity):
 class BookingRule(Entity):
     _schema = File(id='booking_rule_id',
                    fileType=FileType.CSV,
-                   name='booking_rule',
+                   name='booking_rules',
                    required=False)
 
     booking_rule_id: str
-    booking_type: BookingRule
+    booking_type: BookingType
     prior_notice_duration_min: int = 0
     prior_notice_duration_max: int = 0
     prior_notice_last_day: int = 0
@@ -311,4 +311,4 @@ class Trip(Entity):
 
 
 GTFS_SUBSET_SCHEMA = FileCollection(Agency, BookingRule, Calendar, CalendarDate,
-                            Locations, LocationGroups, Routes, Transfer, Trip, Stop, StopTime)
+                                    Locations, LocationGroups, Routes, Transfer, Trip, Stop, StopTime)

@@ -5,6 +5,7 @@ from typing import Any, List
 
 from .schema_classes import Schema, SchemaCollection
 
+
 class GTFSTime(int):
     # GTFS allows times exceeding 23:59:59 as it is simpler to describe night
     # services that way in many cases. A trip could theoretically be shifted
@@ -166,7 +167,6 @@ class Geometry(Entity):
     type: str
     coordinates: Any
 
-    
 
 class Feature(Entity):
     _schema = Schema()
@@ -174,5 +174,6 @@ class Feature(Entity):
     type: str = "Feature"  # Need to be asserted
     properties: Properties
     geometry: Geometry
+
 
 SCHEMA_COLLECTION = SchemaCollection(Properties, Geometry, Feature)

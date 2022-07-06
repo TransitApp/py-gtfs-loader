@@ -59,6 +59,7 @@ class RouteType(IntEnum):
     FUNICULAR = 7
     TROLLEYBUS = 11
     MONORAIL = 0
+    CAR = 13
 
 
 class TransferType(IntEnum):

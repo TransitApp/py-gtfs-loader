@@ -1,7 +1,9 @@
 import functools
 import enum
 from datetime import datetime
-from typing import Any
+from typing import Any, List
+
+from .schema_classes import Schema, SchemaCollection
 
 
 class GTFSTime(int):
@@ -148,3 +150,30 @@ def _(value: bool):
 @serialize.register
 def _(value: None):
     return ''
+
+
+class Properties(Entity):
+    _schema = Schema()
+
+    stop_name: str = ''
+    stop_desc: str = ''
+    zone_id: str = ''
+    stop_url: str = ''
+
+
+class Geometry(Entity):
+    _schema = Schema()
+
+    type: str
+    coordinates: Any
+
+
+class Feature(Entity):
+    _schema = Schema()
+    id: str
+    type: str = "Feature"  # Need to be asserted
+    properties: Properties
+    geometry: Geometry
+
+
+SCHEMA_COLLECTION = SchemaCollection(Properties, Geometry, Feature)

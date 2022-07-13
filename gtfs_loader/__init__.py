@@ -221,17 +221,28 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir):
         if not entities:
             continue
 
-        entities_sorted = dict(sorted_entities(file_schema, entities))
-        flat_entities = flatten_entities(file_schema, entities_sorted)
-        fields = entities._resolved_fields
+        if file_schema.fileType is schema_classes.FileType.CSV:
+            save_csv(file_schema, entities, gtfs_out_dir)
+        elif file_schema.fileType is schema_classes.FileType.GEOJSON:
+            save_json(file_schema, entities, gtfs_out_dir)
 
-        with open(gtfs_out_dir / file_schema.filename, 'w',
-                  encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow(fields.keys())
-            for entity in flat_entities:
-                writer.writerow(
-                    types.serialize(entity.get(name, '')) for name in fields)
+
+def save_csv(file_schema, entities, gtfs_out_dir):
+    entities_sorted = dict(sorted_entities(file_schema, entities))
+    flat_entities = flatten_entities(file_schema, entities_sorted)
+    fields = entities._resolved_fields
+
+    with open(gtfs_out_dir / (file_schema.filename), 'w', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow(fields.keys())
+        for entity in flat_entities:
+            writer.writerow(
+                types.serialize(entity.get(name, '')) for name in fields)
+
+
+def save_json(file_schema, entities, gtfs_out_dir):
+    with open(gtfs_out_dir / (file_schema.filename), 'w', encoding='utf-8') as f:
+        f.write(json.dumps(entities, indent=4, default=vars))
 
 
 def flatten_entities(file_schema, entities):

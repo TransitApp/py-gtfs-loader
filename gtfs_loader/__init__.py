@@ -11,7 +11,7 @@ class ParseError(ValueError):
     pass
 
 
-def load(gtfs_dir):
+def load(gtfs_dir, sorted_read=False):
     gtfs_dir = Path(gtfs_dir)
     gtfs = types.Entity()
     for file_schema in schema.GTFS_SUBSET_SCHEMA.values():
@@ -28,14 +28,14 @@ def load(gtfs_dir):
                 continue
 
         if file_schema.fileType is schema_classes.FileType.CSV:
-            load_csv(gtfs, filepath, file_schema)
+            load_csv(gtfs, filepath, file_schema, sorted_read)
         elif file_schema.fileType is schema_classes.FileType.GEOJSON:
             load_json(gtfs, filepath, file_schema)
 
     return gtfs
 
 
-def load_csv(gtfs, filepath, file_schema):
+def load_csv(gtfs, filepath, file_schema, sorted_read=False):
     with open(filepath, 'r', encoding='utf-8-sig') as f:
         reader = csv.reader(f, skipinitialspace=True)
         header_row = next(reader, None)
@@ -53,10 +53,13 @@ def load_csv(gtfs, filepath, file_schema):
                                  header_row, reader):
             index_entity(file_schema, entities, entity)
 
+        if sorted_read:
+            processed_entities = sorted_entities(file_schema, entities)
+        else:
+            processed_entities = entities.items()
+
         gtfs[file_schema.name] = types.EntityDict(fields=resolved_fields,
-                                                  values=sorted_entities(
-                                                      file_schema,
-                                                      entities))
+                                                  values=processed_entities)
 
 
 def load_json(gtfs, filepath, file_schema):
@@ -203,7 +206,7 @@ def sorted_entities(file_schema, entities):
     return sorted(entities.items(), key=lambda kv: kv[0])
 
 
-def patch(gtfs, gtfs_in_dir, gtfs_out_dir):
+def patch(gtfs, gtfs_in_dir, gtfs_out_dir, sorted_output=False):
     gtfs_in_dir = Path(gtfs_in_dir)
     gtfs_out_dir = Path(gtfs_out_dir)
     gtfs_out_dir.mkdir(parents=True, exist_ok=True)
@@ -222,14 +225,18 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir):
             continue
 
         if file_schema.fileType is schema_classes.FileType.CSV:
-            save_csv(file_schema, entities, gtfs_out_dir)
+            save_csv(file_schema, entities, gtfs_out_dir, sorted_output)
         elif file_schema.fileType is schema_classes.FileType.GEOJSON:
             save_json(file_schema, entities, gtfs_out_dir)
 
 
-def save_csv(file_schema, entities, gtfs_out_dir):
-    entities_sorted = dict(sorted_entities(file_schema, entities))
-    flat_entities = flatten_entities(file_schema, entities_sorted)
+def save_csv(file_schema, entities, gtfs_out_dir, sorted_output=False):
+    if sorted_output:
+        processed_entities = dict(sorted_entities(file_schema, entities))
+    else:
+        processed_entitites = entities.copy()
+
+    flat_entities = flatten_entities(file_schema, processed_entities)
     fields = entities._resolved_fields
 
     with open(gtfs_out_dir / (file_schema.filename), 'w', encoding='utf-8') as f:

@@ -234,7 +234,7 @@ def save_csv(file_schema, entities, gtfs_out_dir, sorted_output=False):
     if sorted_output:
         processed_entities = dict(sorted_entities(file_schema, entities))
     else:
-        processed_entitites = entities.copy()
+        processed_entities = entities.copy()
 
     flat_entities = flatten_entities(file_schema, processed_entities)
     fields = entities._resolved_fields

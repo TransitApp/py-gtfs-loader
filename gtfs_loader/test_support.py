@@ -7,12 +7,16 @@ test_something/ - A test case must begin with test_.
     expected_default/ - The output the tool is expected to produce.
     expected_abc/ - The same input data can be used for several related tests with different expected outputs.
         A test runner can use `tag='abc'` to compare against the `abc` data for example.
+
+See tests/ in this repo for a simple example of the framework in use.
 """
+
 
 from pathlib import Path
 import tempfile
 import shutil
 import os
+
 
 def init(caller_location):
     """

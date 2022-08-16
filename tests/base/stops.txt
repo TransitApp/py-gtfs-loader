@@ -1,0 +1,119 @@
+stop_id,stop_name,stop_lat,stop_lon
+junction,"Osachoff at White",49.441632,-117.538984
+nelson-tc,"Ward St at Baker St",49.491833,-117.293763
+stanley-hart,"Stanley St at Hart St",49.479433,-117.284822
+slocan-park,"Hwy 6 at Slocan Park",49.517079,-117.625223
+winlaw,"Slocan River at Winlaw Bridge",49.616196,-117.566351
+slocan-city,"Harold St at Giffin",49.763303,-117.469690
+baker-falls,"Baker St at Falls St",49.490544,-117.297958
+bonnington,"Bonnington Rd",49.465133,-117.483513
+glade,"Hwy 3A at Glade",49.410577,-117.539891
+castlegar-tc,"Selkirk College",49.311015,-117.652372
+hall-mines-observatory,"Hall Mines at Observatory St",49.485485,-117.293320
+perrier,"Perrier Rd",49.469499,-117.287474
+stanley-carbonate,"Stanley St at Carbonate St",49.488828,-117.292937
+1-01,"Hart St at Falls St",49.478401,-117.287071
+1-02,"Stanley St at Silica St",49.489653,-117.293870
+1-03,"Falls St at Beasley St",49.479603,-117.288375
+1-04,"Stanley St at Mill St",49.488183,-117.292568
+1-05,"Falls St at Richards St",49.481111,-117.289704
+1-06,"Stanley St at Robson St",49.484868,-117.289671
+1-07,"Houston St at Kootenay St",49.482417,-117.289546
+1-08,"Stanley St at Innes St",49.483954,-117.288814
+1-09,"Houston St at Ward St",49.483436,-117.286748
+1-10,"Stanley St at Richards St",49.482136,-117.287146
+1-11,"Houston St at Josephine St",49.484200,-117.284796
+1-12,"Stanley St at Beasley St",49.480881,-117.286072
+1-13,"Houston St at Hall St",49.484788,-117.283323
+1-14,"Houston St at Cedar St",49.485513,-117.281148
+1-15,"Cottonwood St at 5th St",49.502219,-117.274749
+1-16,"Cedar St at Gore St",49.486968,-117.282161
+1-17,"Cottonwood St at 7th St",49.502197,-117.273164
+1-18,"Cedar St at Robson St",49.487793,-117.282914
+1-19,"Robson St at Hendryx St",49.487345,-117.284894
+1-20,"Robson St at Josephine St",49.486511,-117.287018
+1-21,"Josephine St at Hoover St",49.487765,-117.288377
+1-22,"Latimer St at Josephine St",49.488801,-117.288777
+1-23,"Hendryx St at Mill St",49.490383,-117.286967
+1-24,"Carbonate St at Cedar St",49.491494,-117.286850
+1-25,"View St at Carbonate St",49.492878,-117.285123
+1-26,"View St at Pine St",49.495031,-117.285222
+1-27,"Hendryx St at Mill St",49.490231,-117.287018
+1-28,"Latimer St at Josephine St",49.488817,-117.289017
+3-01,"Stanley St at Silica St",49.489653,-117.293870
+3-02,"Stanley St at Mill St",49.488183,-117.292568
+3-03,"Hall Mines at Observatory St",49.485485,-117.293320
+3-04,"Robertson at Observatory St",49.485134,-117.295043
+3-05,"W Innes St at Robertson",49.482158,-117.296671
+3-06,"W Innes St at McQuarrie",49.482150,-117.298896
+3-07,"W Innes St at Kary",49.482131,-117.301160
+3-08,"W Innes St at Crease",49.482156,-117.302471
+3-09,"Crease at W Houston St",49.481449,-117.303140
+3-10,"W Richards St",49.480069,-117.298824
+3-11,"Silver King at W Beasley St",49.478861,-117.296198
+3-12,"Silver King at Tower",49.476642,-117.295771
+3-13,"Silver King at W Beasley St",49.479058,-117.296094
+3-14,"Vancouver St at W Houston St",49.480581,-117.295262
+3-15,"Robertson at Observatory St",49.485048,-117.295166
+3-16,"Hall Mines at Hoover St",49.485932,-117.293046
+3-17,"Stanley St at Robson St",49.484868,-117.289671
+3-18,"Stanley St at Carbonate St",49.488828,-117.292937
+3-19,"Stanley St at Innes St",49.483954,-117.288814
+3-20,"Stanley St at Richards St",49.482136,-117.287146
+3-21,"Stanley St at Beasley St",49.480881,-117.286072
+15431,SW Spokane St & 11th Ave SW,47.571503,-122.348351
+15432,SW Spokane St & 11th Ave SW,47.571369,-122.34816
+1558,Columbia St & Alaskan Way,47.60247,-122.33712
+1565,Columbia St & Western Ave,47.602745,-122.336075
+21350,16th Ave SW & SW Henderson St,47.523144,-122.355003
+21360,16th Ave SW & SW Trenton St,47.524963,-122.35498
+21370,16th Ave SW & SW Cloverdale St,47.52676,-122.35498
+21380,16th Ave SW & SW Thistle St,47.528519,-122.354965
+21390,16th Ave SW & SW Elmgrove St,47.530273,-122.35495
+21400,16th Ave SW & SW Kenyon St,47.53212,-122.35495
+21410,16th Ave SW & SW Holden St,47.533516,-122.354935
+21590,Delridge Way SW & SW Oregon St,47.563183,-122.363258
+21600,Delridge Way SW & SW Genesee St,47.565006,-122.363213
+21620,Delridge Way SW & SW Andover St,47.568264,-122.36319
+21990,Delridge Way SW & SW Andover St,47.56802,-122.363396
+22010,Delridge Way SW & SW Genesee St,47.564484,-122.363419
+22184,Delridge Way SW & SW Henderson St,47.523251,-122.360252
+22190,16th Ave SW & SW Holden St,47.533436,-122.355141
+22200,16th Ave SW & SW Kenyon St,47.531635,-122.355156
+22210,16th Ave SW & SW Elmgrove St,47.529839,-122.355156
+22220,16th Ave SW & SW Thistle St,47.528046,-122.355171
+22230,16th Ave SW & SW Cloverdale St,47.526253,-122.355179
+22244,16th Ave SW & SW Henderson St,47.523018,-122.355209
+31736,SW Barton Pl & 22nd Ave SW,47.522247,-122.36203
+36090,21st Ave SW & 22nd Ave SW,47.559139,-122.360291
+36100,21st Ave SW & SW Dawson St,47.557446,-122.360237
+36110,SW Dawson St & 18th Ave SW,47.555695,-122.35714
+36120,16th Ave SW & SW Brandon St,47.554665,-122.354881
+36140,16th Ave SW & SW Findlay St,47.551899,-122.354881
+36145,Ssc North Entrance,47.548706,-122.354935
+36155,Ssc North Entrance,47.549107,-122.354637
+36170,16th Ave SW & SW Holly St,47.54282,-122.355034
+36180,16th Ave SW & SW Myrtle St,47.538834,-122.355103
+36190,16th Ave SW & SW Webster St,47.535259,-122.355125
+36490,16th Ave SW & SW Webster St,47.535728,-122.354919
+36500,16th Ave SW & SW Orchard St,47.538403,-122.354897
+36510,16th Ave SW & SW Holly St,47.543026,-122.354813
+36520,16th Ave SW & SW Morgan St,47.544956,-122.354691
+36522,16th Ave SW & SW Graham St,47.546555,-122.35495
+36525,South Seattle College,47.547443,-122.353882
+36530,16th Ave SW & SW Findlay St,47.551876,-122.354675
+36540,16th Ave SW & SW Brandon St,47.55394,-122.354675
+36560,SW Dawson St & 18th Ave SW,47.555836,-122.356987
+36580,21st Ave SW & 22nd Ave SW,47.558201,-122.360062
+39976,25th Ave SW & SW Trenton St,47.523994,-122.364632
+39980,25th Ave SW & SW Henderson St,47.523014,-122.364632
+39990,25th Ave SW & SW Barton St - Bay 4,47.521225,-122.364647
+40016,22nd Ave SW & 23rd Ave SW,47.561165,-122.361496
+40018,22nd Ave SW & 23rd Ave SW,47.560719,-122.361382
+40020,SW Oregon St & Delridge Way SW,47.562832,-122.363037
+433,3rd Ave & Pike St,47.60907,-122.337288
+468,3rd Ave & Seneca St,47.606502,-122.334938
+481,3rd Ave & Columbia St,47.604263,-122.332901
+539,3rd Ave & Marion St,47.604805,-122.33316
+558,3rd Ave & Seneca St,47.607052,-122.335213
+578,3rd Ave & Pike St,47.610485,-122.338356

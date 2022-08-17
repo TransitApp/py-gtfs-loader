@@ -304,11 +304,23 @@ class Trip(Entity):
 
     @cached_property
     def first_point(self):
-        return self._gtfs.stops[self.first_stop_time.stop_id].location
+        return self.first_stop.location
 
     @cached_property
     def last_point(self):
-        return self._gtfs.stops[self.last_stop_time.stop_id].location
+        return self.last_stop.location
+
+    @cached_property
+    def first_stop(self):
+        return self._gtfs.stops[self.first_stop_time.stop_id]
+
+    @cached_property
+    def last_stop(self):
+        return self._gtfs.stops[self.last_stop_time.stop_id]
+
+    @cached_property
+    def route(self):
+        return self._gtfs.routes[self.route_id]
 
 
 GTFS_SUBSET_SCHEMA = FileCollection(Agency, BookingRule, Calendar, CalendarDate,

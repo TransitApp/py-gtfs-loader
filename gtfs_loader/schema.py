@@ -157,13 +157,27 @@ class FareAttributes(Entity):
                    fileType=FileType.CSV,
                    required=False)
 
-    agency_id: str
-    fare_id:str
+    agency_id: str = ''
+    fare_id: str
     price: float
     currency_type: str
     payment_method: PaymentMethod
-    transfers: FareTransfers
-    transfer_duration: int
+    transfers: FareTransfers = None
+    transfer_duration: int = None
+
+
+class FareRules(Entity):
+    _schema = File(id='fare_id',
+                   name='fare_rules',
+                   fileType=FileType.CSV,
+                   required=False)
+
+    fare_id: str
+    agency_id: str = ''
+    route_id: str = ''
+    origin_id: str = ''
+    destination_id: str = ''
+    contains_id: str = ''
 
 
 class LocationGroups(Entity):
@@ -349,5 +363,5 @@ class Trip(Entity):
         return self._gtfs.routes[self.route_id]
 
 
-GTFS_SUBSET_SCHEMA = FileCollection(Agency, BookingRule, Calendar, CalendarDate, FareAttributes,
+GTFS_SUBSET_SCHEMA = FileCollection(Agency, BookingRule, Calendar, CalendarDate, FareAttributes, FareRules,
                                     Locations, LocationGroups, Routes, Transfer, Trip, Stop, StopTime)

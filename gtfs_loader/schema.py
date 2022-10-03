@@ -77,7 +77,7 @@ class Agency(Entity):
                    name='agency',
                    required=True)
 
-    agency_id: str
+    agency_id: str = ''
     agency_name: str
     agency_url: str
     agency_timezone: str

@@ -122,6 +122,9 @@ def merge_header_and_declared_fields(file_schema, header_row):
 
 def parse_rows(gtfs, file_schema, fields, header_row, reader):
     for lineno, row in enumerate(reader, 2):
+        if len(row) == 0:
+            continue # empty row, just skip it
+
         entity = file_schema.class_def()
         entity._gtfs = gtfs
 

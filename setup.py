@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='py-gtfs-loader',
-      version='0.1.4',
+      version='0.1.5',
       description='Load GTFS',
       url='https://github.com/TransitApp/py-gtfs-loader',
       author='Nicholas Paun, Jonathan Milot',

@@ -95,11 +95,11 @@ class BookingRule(Entity):
 
     booking_rule_id: str
     booking_type: BookingType
-    prior_notice_duration_min: int = 0
-    prior_notice_duration_max: int = 0
-    prior_notice_last_day: int = 0
+    prior_notice_duration_min: Optional[int] = None
+    prior_notice_duration_max: Optional[int] = None
+    prior_notice_last_day: Optional[int] = None
     prior_notice_last_time: GTFSTime = GTFSTime('')
-    prior_notice_start_day: int = 0
+    prior_notice_start_day: Optional[int] = None
     prior_notice_start_time: GTFSTime = GTFSTime('')
     prior_notice_service_id: str = ''
     message: str = ''

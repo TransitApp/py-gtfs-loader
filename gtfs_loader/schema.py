@@ -227,8 +227,8 @@ class StopTime(Entity):
     stop_sequence: int
     arrival_time: GTFSTime = GTFSTime('')
     departure_time: GTFSTime = GTFSTime('')
-    start_pickup_dropoff_window: GTFSTime = GTFSTime('')
-    end_pickup_dropoff_window: GTFSTime = GTFSTime('')
+    start_pickup_drop_off_window: GTFSTime = GTFSTime('')
+    end_pickup_drop_off_window: GTFSTime = GTFSTime('')
     pickup_type: PickupType = PickupType.REGULARLY_SCHEDULED
     drop_off_type: DropOffType = DropOffType.REGULARLY_SCHEDULED
     mean_duration_factor: float = -1

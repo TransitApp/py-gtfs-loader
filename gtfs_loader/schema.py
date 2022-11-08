@@ -231,10 +231,10 @@ class StopTime(Entity):
     end_pickup_drop_off_window: GTFSTime = GTFSTime('')
     pickup_type: PickupType = PickupType.REGULARLY_SCHEDULED
     drop_off_type: DropOffType = DropOffType.REGULARLY_SCHEDULED
-    mean_duration_factor: float = 1
-    mean_duration_offset: float = 0
-    safe_duration_factor: float = 1
-    safe_duration_offset: float = 0
+    mean_duration_factor: float
+    mean_duration_offset: float
+    safe_duration_factor: float
+    safe_duration_offset: float
 
     @property
     def stop(self):

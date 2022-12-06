@@ -224,8 +224,6 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, sorted_output=False):
     for file_schema in schema.GTFS_SUBSET_SCHEMA.values():
         print(f'Writing {file_schema.name}')
         entities = gtfs.get(file_schema.name)
-        if not entities:
-            continue
 
         if file_schema.fileType is schema_classes.FileType.CSV:
             save_csv(file_schema, entities, gtfs_out_dir, sorted_output)

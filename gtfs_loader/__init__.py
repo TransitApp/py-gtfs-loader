@@ -124,7 +124,7 @@ def merge_header_and_declared_fields(file_schema, header_row):
 def parse_rows(gtfs, file_schema, fields, header_row, reader):
     for lineno, row in enumerate(reader, 2):
         if len(row) == 0:
-            continue # empty row, just skip it
+            continue  # empty row, just skip it
 
         entity = file_schema.class_def()
         entity._gtfs = gtfs
@@ -256,7 +256,7 @@ def save_json(file_schema, entities, gtfs_out_dir):
     with open(gtfs_out_dir / (file_schema.filename), 'w', encoding='utf-8') as f:
         f.write(json.dumps(entities, indent=4, default=vars))
 
-        
+
 def flatten_entities(file_schema, entities):
     if file_schema.group_id:
         flat_entities = []

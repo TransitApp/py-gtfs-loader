@@ -1,6 +1,7 @@
 import csv
 import enum
 import json
+import os
 import shutil
 import typing
 from pathlib import Path
@@ -123,7 +124,7 @@ def merge_header_and_declared_fields(file_schema, header_row):
 def parse_rows(gtfs, file_schema, fields, header_row, reader):
     for lineno, row in enumerate(reader, 2):
         if len(row) == 0:
-            continue # empty row, just skip it
+            continue  # empty row, just skip it
 
         entity = file_schema.class_def()
         entity._gtfs = gtfs
@@ -224,6 +225,9 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, sorted_output=False):
     for file_schema in schema.GTFS_SUBSET_SCHEMA.values():
         print(f'Writing {file_schema.name}')
         entities = gtfs.get(file_schema.name)
+        if not entities:
+            (gtfs_out_dir / file_schema.filename).unlink(missing_ok=True)
+            continue
 
         if file_schema.fileType is schema_classes.FileType.CSV:
             save_csv(file_schema, entities, gtfs_out_dir, sorted_output)

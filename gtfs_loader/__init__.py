@@ -226,7 +226,7 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, sorted_output=False):
         print(f'Writing {file_schema.name}')
         entities = gtfs.get(file_schema.name)
         if not entities:
-            delete_file(file_schema, gtfs_out_dir)
+            (gtfs_out_dir / file_schema.filename).unlink(missing_ok=True)
             continue
 
         if file_schema.fileType is schema_classes.FileType.CSV:
@@ -256,14 +256,7 @@ def save_json(file_schema, entities, gtfs_out_dir):
     with open(gtfs_out_dir / (file_schema.filename), 'w', encoding='utf-8') as f:
         f.write(json.dumps(entities, indent=4, default=vars))
 
-
-def delete_file(file_schema, gtfs_out_dir):
-    try:
-        os.remove(gtfs_out_dir / (file_schema.filename))
-    except OSError:
-        pass
-
-
+        
 def flatten_entities(file_schema, entities):
     if file_schema.group_id:
         flat_entities = []

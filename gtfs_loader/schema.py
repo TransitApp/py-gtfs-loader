@@ -69,6 +69,7 @@ class TransferType(IntEnum):
     NOT_POSSIBLE = 3
     IN_SEAT = 4
     VEHICLE_CONTINUATION = 5
+    IN_SEAT_TRIP_PLANNING_ONLY = 104
 
 
 class Agency(Entity):

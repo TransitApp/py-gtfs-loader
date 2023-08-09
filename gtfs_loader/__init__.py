@@ -29,7 +29,7 @@ def load(gtfs_dir, sorted_read=False):
                 continue
 
         if file_schema.fileType is schema_classes.FileType.CSV:
-            load_csv(gtfs, filepath, file_schema, sorted_read=(True if file_schema.name == 'stop_times' else sorted_read))
+            load_csv(gtfs, filepath, file_schema, sorted_read=(True if file_schema.name == 'stop_times' or file_schema.name == 'shapes' else sorted_read))
         elif file_schema.fileType is schema_classes.FileType.GEOJSON:
             load_json(gtfs, filepath, file_schema)
 

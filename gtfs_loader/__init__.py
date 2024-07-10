@@ -11,12 +11,19 @@ from . import schema_classes, types, schema
 class ParseError(ValueError):
     pass
 
+def get_files(files):
+    return schema.FileCollection(*(schema.GTFS_FILENAMES[f] for f in files)).values()
 
-def load(gtfs_dir, sorted_read=False):
+
+def load(gtfs_dir, sorted_read=False, files=None, verbose=True):
     gtfs_dir = Path(gtfs_dir)
     gtfs = types.Entity()
-    for file_schema in schema.GTFS_SUBSET_SCHEMA.values():
-        print(f'Loading {file_schema.name}')
+
+    files_to_load = get_files(files) if files else schema.GTFS_SUBSET_SCHEMA.values()
+
+    for file_schema in files_to_load:
+        if verbose:
+            print(f'Loading {file_schema.name}')
         filepath = gtfs_dir / file_schema.filename
         gtfs[file_schema.name] = types.EntityDict(
             file_schema.get_declared_fields())
@@ -210,7 +217,7 @@ def sorted_entities(file_schema, entities):
     return sorted(entities.items(), key=lambda kv: kv[0])
 
 
-def patch(gtfs, gtfs_in_dir, gtfs_out_dir, sorted_output=False):
+def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verbose=True):
     gtfs_in_dir = Path(gtfs_in_dir)
     gtfs_out_dir = Path(gtfs_out_dir)
     gtfs_out_dir.mkdir(parents=True, exist_ok=True)
@@ -222,8 +229,11 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, sorted_output=False):
         except shutil.SameFileError:
             pass  # No need to copy if we're working in-place
 
-    for file_schema in schema.GTFS_SUBSET_SCHEMA.values():
-        print(f'Writing {file_schema.name}')
+    files_to_patch = get_files(files) if files else schema.GTFS_SUBSET_SCHEMA.values()
+
+    for file_schema in files_to_patch:
+        if verbose:
+            print(f'Writing {file_schema.name}')
         entities = gtfs.get(file_schema.name)
         if not entities:
             (gtfs_out_dir / file_schema.filename).unlink(missing_ok=True)

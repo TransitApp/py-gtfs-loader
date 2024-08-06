@@ -326,3 +326,17 @@ class Trip(Entity):
 
 GTFS_SUBSET_SCHEMA = FileCollection(Agency, BookingRule, Calendar, CalendarDate,
                                     Locations, LocationGroups, Routes, Transfer, Trip, Stop, StopTime)
+
+GTFS_FILENAMES = {
+    Agency._schema.name: Agency,
+    BookingRule._schema.name: BookingRule,
+    Calendar._schema.name: Calendar,
+    CalendarDate._schema.name: CalendarDate,
+    Locations._schema.name: Locations,
+    LocationGroups._schema.name: LocationGroups,
+    Routes._schema.name: Routes,
+    Transfer._schema.name: Transfer,
+    Trip._schema.name: Trip,
+    Stop._schema.name: Stop,
+    StopTime._schema.name: StopTime,
+}

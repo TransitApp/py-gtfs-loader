@@ -16,6 +16,6 @@ def test_default(feed_dir):
 def do_test(feed_dir):
     work_dir = test_support.create_test_data(feed_dir)
 
-    gtfs = gtfs_loader.load(work_dir)
-    gtfs_loader.patch(gtfs, work_dir, work_dir)
+    gtfs = gtfs_loader.load(work_dir, verbose=False)
+    gtfs_loader.patch(gtfs, work_dir, work_dir, verbose=False)
     test_support.check_expected_output(feed_dir, work_dir)

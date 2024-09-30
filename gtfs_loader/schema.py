@@ -211,7 +211,7 @@ class Stop(Entity):
     @cached_property
     def location(self):
         if self.stop_lat is None or self.stop_lon is None:
-            raise ValueError(f'Stop {self.stop_id} missing location')
+            return None
 
         return LatLon(self.stop_lat, self.stop_lon)
 
@@ -285,8 +285,11 @@ class Trip(Entity):
 
     @property
     def stop_shape(self):
-        return tuple(self._gtfs.stops[st.stop_id].location
-                     for st in self._gtfs.stop_times[self.trip_id])
+        locations = tuple(self._gtfs.stops[st.stop_id].location for st in self._gtfs.stop_times[self.trip_id])
+
+        if None in locations:
+            return None
+        return locations
 
     @cached_property
     def shift_days(self):

@@ -71,6 +71,8 @@ class LatLon:
             return LatLon.EARTH_RADIUS_M * min(d_l1_x, d_l2_x)
 
     def __eq__(self, other):
+        if other == None:
+            return False
         return self.lat == other.lat and self.lon == other.lon
 
     def __hash__(self):

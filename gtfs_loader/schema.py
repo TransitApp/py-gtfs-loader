@@ -241,6 +241,26 @@ class StopTime(Entity):
     def stop(self):
         return self._gtfs.stops[self.stop_id]
 
+class ItineraryCell(Entity):
+    _schema = File(id='itinerary_index',
+                   name='itinerary_cells',
+                   fileType=FileType.CSV,
+                   required=True,
+                   group_id='stop_sequence')
+
+    stop_id: str
+    stop_sequence: int
+    pickup_type: PickupType = PickupType.REGULARLY_SCHEDULED
+    drop_off_type: DropOffType = DropOffType.REGULARLY_SCHEDULED
+    mean_duration_factor: Optional[float] = None
+    mean_duration_offset: Optional[float] = None
+    safe_duration_factor: Optional[float] = None
+    safe_duration_offset: Optional[float] = None
+
+    @property
+    def stop(self):
+        return self._gtfs.stops[self.stop_id]
+
 
 class Transfer(Entity):
     _schema = File(id='from_trip_id',
@@ -325,16 +345,85 @@ class Trip(Entity):
     @cached_property
     def route(self):
         return self._gtfs.routes[self.route_id]
+    
+class ItineraryTrip(Entity):
+    _schema = File(id='trip_id',
+                   fileType=FileType.CSV,
+                   name='trips',
+                   required=True)
+
+    trip_id: str
+    service_id: str
+    block_id: str = ''
+    route_id: str
+    itinerary_index: str
+    departure_times: List[int]
+    arrival_times: List[int]
+    start_pickup_drop_off_windows: List[int]
+    end_pickup_drop_off_windows: List[int]
+
+    @property
+    def first_itinerary_cell(self):
+        return self._gtfs.itinerary_cells[self.itinerary_index][0]
+
+    @property
+    def last_itinerary_cell(self):
+        return self._gtfs.itinerary_cells[self.itinerary_index][-1]
+
+    @property
+    def stop_shape(self):
+        locations = tuple(self._gtfs.stops[st.stop_id].location for st in self._gtfs.itinerary_cells[self.itinerary_index])
+
+        if None in locations:
+            return None
+        return locations
+
+    @cached_property
+    def shift_days(self):
+        return 1 if self.departure_times[0] >= DAY_SEC else 0
+
+    @cached_property
+    def first_departure(self):
+        return self.departure_times[0] - DAY_SEC * self.shift_days
+
+    @cached_property
+    def last_arrival(self):
+        return self.arrival_times[-1] - DAY_SEC * self.shift_days
+
+    @cached_property
+    def first_point(self):
+        return self.first_stop.location
+
+    @cached_property
+    def last_point(self):
+        return self.last_stop.location
+
+    @cached_property
+    def first_stop(self):
+        return self._gtfs.stops[self.first_itinerary_cell.stop_id]
+
+    @cached_property
+    def last_stop(self):
+        return self._gtfs.stops[self.last_itinerary_cell.stop_id]
+
+    @cached_property
+    def route(self):
+        return self._gtfs.routes[self.route_id]
 
 
 GTFS_SUBSET_SCHEMA = FileCollection(Agency, BookingRule, Calendar, CalendarDate,
                                     Locations, LocationGroups, Routes, Transfer, Trip, Stop, StopTime)
+
+GTFS_SUBSET_SCHEMA_ITINERARIES = FileCollection(Agency, BookingRule, Calendar, CalendarDate, ItineraryCell,
+                                    ItineraryTrip, Locations, LocationGroups, Routes, Transfer, Stop)
 
 GTFS_FILENAMES = {
     Agency._schema.name: Agency,
     BookingRule._schema.name: BookingRule,
     Calendar._schema.name: Calendar,
     CalendarDate._schema.name: CalendarDate,
+    ItineraryCell._schema.name: ItineraryCell,
+    ItineraryTrip._schema.name: ItineraryTrip,
     Locations._schema.name: Locations,
     LocationGroups._schema.name: LocationGroups,
     Routes._schema.name: Routes,

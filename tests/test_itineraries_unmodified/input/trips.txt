@@ -1,0 +1,4 @@
+route_id,trip_id,service_id,block_id,itinerary_index,departure_times,arrival_times,start_pickup_drop_off_windows,end_pickup_drop_off_windows
+red,trip_1,mon-tues-wed-thurs,1,1,"[79200,79260,79320,79380,79440]","[79200,79260,79320,79380,79440]","[-1,-1,-1,-1,-1]","[-1,-1,-1,-1,-1]"
+red,trip_2,mon-tues-wed-thurs,1,1,"[79440,79500,79560,79620,79680]","[79440,79500,79560,79620,79680]","[-1,-1,-1,-1,-1]","[-1,-1,-1,-1,-1]"
+red,trip_3,mon-tues-wed-thurs,1,1,"[79680,79740,79800,79860,79920]","[79680,79740,79800,79860,79920]","[-1,-1,-1,-1,-1]","[-1,-1,-1,-1,-1]"

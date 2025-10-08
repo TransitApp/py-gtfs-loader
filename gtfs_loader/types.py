@@ -1,7 +1,8 @@
 import functools
 import enum
+import json
 from datetime import datetime
-from typing import Any, List
+from typing import Any
 
 from .schema_classes import Schema, SchemaCollection
 
@@ -12,7 +13,6 @@ class GTFSTime(int):
     # forward an arbitrary number of days using this notation, but we block it
     # as it just creates confusion.
     MAX_HOUR_REPRESENTATION = 36
-
     def __new__(cls, time_str):
         if isinstance(time_str, int):
             return super().__new__(cls, time_str)
@@ -42,7 +42,6 @@ class GTFSTime(int):
 
     def __sub__(self, other):
         return GTFSTime(super().__sub__(other))
-
 
 class GTFSDate(datetime):
 
@@ -134,6 +133,9 @@ class Entity:
 
 @functools.singledispatch
 def serialize(value: Any):
+    if isinstance(value, list):
+        # Remove spaces after commas for compactness
+        return json.dumps(value,separators=(',', ':')) 
     return str(value)
 
 

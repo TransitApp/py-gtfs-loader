@@ -1,0 +1,6 @@
+itinerary_index,stop_sequence,stop_id,pickup_type,drop_off_type,mean_duration_factor,mean_duration_offset,safe_duration_factor,safe_duration_offset
+1,0,junction,0,0,,,,
+1,1,slocan-park,0,0,,,,
+1,2,slocan-city,0,0,,,,
+1,3,nelson-tc,0,0,,,,
+1,4,junction,0,0,,,,

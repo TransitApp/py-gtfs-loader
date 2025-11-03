@@ -15,11 +15,11 @@ def get_files(files):
     return schema.FileCollection(*(schema.GTFS_FILENAMES[f] for f in files)).values()
 
 
-def load(gtfs_dir, sorted_read=False, files=None, verbose=True):
+def load(gtfs_dir, sorted_read=False, files=None, verbose=True, itineraries=False):
     gtfs_dir = Path(gtfs_dir)
     gtfs = types.Entity()
 
-    files_to_load = get_files(files) if files else schema.GTFS_SUBSET_SCHEMA.values()
+    files_to_load = get_files(files) if files else schema.GTFS_SUBSET_SCHEMA_ITINERARIES.values() if itineraries else schema.GTFS_SUBSET_SCHEMA.values()
 
     for file_schema in files_to_load:
         if verbose:
@@ -163,6 +163,10 @@ def convert(config, value):
     if not config.required and value == '':
         return config.default
 
+    # Lists are stringified as JSON in csv.
+    if typing.get_origin(config.type) is list:
+        return list(json.loads(value))
+    
     config_type = get_inner_type(config.type)
     if issubclass(config_type, enum.IntEnum):
         return config_type(int(value))
@@ -217,7 +221,7 @@ def sorted_entities(file_schema, entities):
     return sorted(entities.items(), key=lambda kv: kv[0])
 
 
-def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verbose=True):
+def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verbose=True, itineraries=False):
     gtfs_in_dir = Path(gtfs_in_dir)
     gtfs_out_dir = Path(gtfs_out_dir)
     gtfs_out_dir.mkdir(parents=True, exist_ok=True)
@@ -229,7 +233,7 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verb
         except shutil.SameFileError:
             pass  # No need to copy if we're working in-place
 
-    files_to_patch = get_files(files) if files else schema.GTFS_SUBSET_SCHEMA.values()
+    files_to_patch = get_files(files) if files else schema.GTFS_SUBSET_SCHEMA_ITINERARIES.values() if itineraries else schema.GTFS_SUBSET_SCHEMA.values()
 
     for file_schema in files_to_patch:
         if verbose:

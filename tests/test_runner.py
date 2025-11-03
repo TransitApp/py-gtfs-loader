@@ -14,8 +14,9 @@ def test_default(feed_dir):
 
 
 def do_test(feed_dir):
+    itineraries = 'itineraries' in feed_dir.name
     work_dir = test_support.create_test_data(feed_dir)
 
-    gtfs = gtfs_loader.load(work_dir, verbose=False)
-    gtfs_loader.patch(gtfs, work_dir, work_dir, verbose=False)
+    gtfs = gtfs_loader.load(work_dir, verbose=False, itineraries=itineraries)
+    gtfs_loader.patch(gtfs, work_dir, work_dir, verbose=False, itineraries=itineraries)
     test_support.check_expected_output(feed_dir, work_dir)

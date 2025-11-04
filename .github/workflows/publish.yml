@@ -1,0 +1,64 @@
+name: Publish to PyPI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Check if version changed
+      id: version_check
+      run: |
+        VERSION=$(python setup.py --version)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+        if git diff HEAD^ HEAD -- setup.py | grep -q "version="; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Set up Python
+      if: steps.version_check.outputs.changed == 'true'
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install build dependencies
+      if: steps.version_check.outputs.changed == 'true'
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install build
+
+    - name: Build package
+      if: steps.version_check.outputs.changed == 'true'
+      run: python -m build
+
+    - name: Publish to PyPI
+      if: steps.version_check.outputs.changed == 'true'
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        python -m pip install twine
+        python -m twine upload dist/*
+
+    - name: Create GitHub Release
+      if: steps.version_check.outputs.changed == 'true'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        VERSION=${{ steps.version_check.outputs.version }}
+        gh release create "v$VERSION" \
+          --title "v$VERSION" \
+          --generate-notes \
+          dist/*

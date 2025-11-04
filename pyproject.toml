@@ -1,0 +1,31 @@
+[project]
+name = "py-gtfs-loader"
+version = "0.3.0"
+description = "Load GTFS"
+readme = "README.md"
+authors = [
+    { name = "Jonathan Milot" },
+    { name = "Jeremy Steele" }
+]
+requires-python = ">=3.10"
+dependencies = []
+license = { text = "MIT" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.urls]
+Homepage = "https://github.com/TransitApp/py-gtfs-loader"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["gtfs_loader*"]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "pytest>=8.4.2",
+]

@@ -1,6 +1,5 @@
 # py-gtfs-loader
 
-[![PyPI version](https://badge.fury.io/py/py-gtfs-loader.svg)](https://badge.fury.io/py/py-gtfs-loader)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://github.com/TransitApp/py-gtfs-loader/workflows/Build%20on%20pull%20request/badge.svg)](https://github.com/TransitApp/py-gtfs-loader/actions)
@@ -12,7 +11,7 @@ A Python library for loading and manipulating GTFS (General Transit Feed Specifi
 - 📦 Load GTFS feeds from directories
 - ✅ Schema validation with type checking
 - 🔄 Modify and patch GTFS data
-- 🚀 Support for standard GTFS and Transit itinerary format
+- 🚀 Support for standard GTFS and Transit's itinerary format
 - 📝 CSV and GeoJSON file type support
 - 🔗 Cross-referenced entities for easy data navigation
 

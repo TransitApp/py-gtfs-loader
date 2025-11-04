@@ -21,7 +21,7 @@ jobs:
     - name: Check if version changed
       id: version_check
       run: |
-        VERSION=$(uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+        VERSION=$(grep -E '^version = ' pyproject.toml | cut -d'"' -f2)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
         if git diff HEAD^ HEAD -- pyproject.toml | grep -q 'version ='; then

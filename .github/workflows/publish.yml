@@ -6,9 +6,10 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, ci-transitapp]
     permissions:
       contents: write
+      id-token: write
 
     steps:
     - uses: actions/checkout@v4
@@ -30,14 +31,25 @@ jobs:
           echo "changed=false" >> $GITHUB_OUTPUT
         fi
 
+    - name: Authenticate to Google Cloud
+      if: steps.version_check.outputs.changed == 'true'
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+        service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+        token_format: access_token
+
     - name: Build package
       if: steps.version_check.outputs.changed == 'true'
       run: uv build
 
-    - name: Publish to PyPI
+    - name: Publish to Artifact Registry
       if: steps.version_check.outputs.changed == 'true'
       env:
-        UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        UV_PUBLISH_URL: https://us-east1-python.pkg.dev/transit-images/private-pypi/
+        UV_PUBLISH_USERNAME: oauth2accesstoken
+        UV_PUBLISH_PASSWORD: ${{ steps.auth.outputs.access_token }}
       run: uv publish
 
     - name: Create GitHub Release

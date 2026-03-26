@@ -6,5 +6,71 @@ on:
   workflow_dispatch: {}
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version-changed: ${{ steps.check.outputs.changed }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+    - name: Get current version
+      id: version
+      run: |
+        VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Check if version changed
+      id: check
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        CURRENT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+        LAST_RELEASE_VERSION=$(gh release list --limit 1 --json tagName --jq '.[0].tagName // "v0.0.0"' | sed 's/^v//')
+
+        echo "Current version: $CURRENT_VERSION"
+        echo "Last release version: $LAST_RELEASE_VERSION"
+
+        if [ "$CURRENT_VERSION" != "$LAST_RELEASE_VERSION" ]; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+
   release:
-    uses: TransitApp/actions/.github/workflows/python-release.yml@master
+    needs: check-version
+    if: needs.check-version.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+    - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+
+    - run: uv sync --extra dev
+
+    - run: uv run pytest .
+
+    - run: uv build
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
+
+    - name: Tag and release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        VERSION="v${{ needs.check-version.outputs.version }}"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git tag "$VERSION"
+        git push --tags
+        gh release create "$VERSION" \
+          --title "Release $VERSION" \
+          --generate-notes \
+          dist/*

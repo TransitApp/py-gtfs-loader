@@ -246,10 +246,8 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verb
 
             # Copying differently depending on whether the input is compressed and whether output should be compressed
             if import_compressed == export_compressed:
-                print(F'C1: {import_filename}')
                 # 1) Compression-states match (both input and output are compressed / uncompressed) -> Simple copying
                 try:
-                    # TODO: SUPPORT WITH / WITHOUT COMPRESSION
                     shutil.copy2(import_filename, export_filename)
                 except shutil.SameFileError:
                     pass  # No need to copy if we're working in-place
@@ -257,11 +255,9 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verb
                 with open(export_filename, 'wb') as export_f:
                     # 2) Compression-states do NOT match (compression / decompression is required with copying)
                     if import_compressed:
-                        print(F'C2: {import_filename}')
                         # 2.1) Input is compressed, but output should not be compressed -> Copying with decompression
                         ZstdDecompressor().copy_stream(import_f, export_f)
                     else:
-                        print(F'C3: {import_filename}')
                         # 2.2) Input is uncompressed, but output should be compressed -> Copying with compression
                         ZstdCompressor(**ZSTD_COMPRESSION_SETTINGS).copy_stream(import_f, export_f)
 
@@ -298,13 +294,13 @@ def save_csv(file_schema, entities, gtfs_out_dir, sorted_output=False, export_co
         else:
             raw_writer = file_writer
 
+        # Using with-statement is necessary for proper flushing and closing on finishing
         with TextIOWrapper(raw_writer, encoding=UTF_8_ENCODING_FOR_EXPORT) as text_writer:
             csv_writer = csv.writer(text_writer)
             csv_writer.writerow(fields.keys())
             for entity in flat_entities:
                 csv_writer.writerow(
                     types.serialize(entity.get(name, '')) for name in fields)
-            text_writer.flush()
 
 
 def save_json(file_schema, entities, gtfs_out_dir):

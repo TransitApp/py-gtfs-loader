@@ -2,13 +2,17 @@ import gtfs_loader
 
 import shutil
 
-# IN_DIR = "/Users/gregorypevnev/Desktop/Transit-PyGtfsLoader/data/stm-out-comp"
-# OUT_DIR = "/Users/gregorypevnev/Desktop/Transit-PyGtfsLoader/data/stm-out-raw"
-# IN_DIR = "/Users/gregorypevnev/Desktop/Transit-PyGtfsLoader/data/in-comp"
-# OUT_DIR = "/Users/gregorypevnev/Desktop/Transit-PyGtfsLoader/data/out-comp"
-
 SORTED_IO = False
 ITINERARIES = True
+
+# IN_DIR="/Users/gregorypevnev/Desktop/Transit-PyGtfsLoader/data/stm-in-raw"
+# OUT_DIR="/Users/gregorypevnev/Desktop/Transit-PyGtfsLoader/data/stm-out-raw"
+
+# def main():
+#   gtfs = gtfs_loader.load(IN_DIR, sorted_read=SORTED_IO, itineraries=ITINERARIES)
+#   shutil.rmtree(OUT_DIR, ignore_errors=True)
+#   gtfs_loader.patch(gtfs, gtfs_in_dir=IN_DIR, gtfs_out_dir=OUT_DIR, 
+#             sorted_output=SORTED_IO, itineraries=ITINERARIES, export_compressed=False)
 
 IN_DIR="/Users/gregorypevnev/Desktop/Transit-PyGtfsLoader/data/stm-in-raw"
 COMP_DIR1="/Users/gregorypevnev/Desktop/Transit-PyGtfsLoader/data/stm-comp1"

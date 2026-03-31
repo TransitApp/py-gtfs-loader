@@ -3,7 +3,7 @@ import enum
 import json
 import shutil
 import typing
-from io import TextIOWrapper, DEFAULT_BUFFER_SIZE
+from io import TextIOWrapper
 from zstandard import ZstdDecompressor, ZstdCompressor
 from pathlib import Path
 from . import schema_classes, types, schema
@@ -241,16 +241,18 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verb
     for import_filename in gtfs_in_dir.iterdir():
         export_filename = gtfs_out_dir / import_filename.name
 
+        # Copying non-CSV files without extra logic (Should not be compressed in the first place)
+        if not import_filename.name.endswith(schema_classes.CSV_EXTENSION):
+            copy_file_silently(import_filename, export_filename)
+            continue
+
         with open(import_filename, 'rb') as import_f:
             import_compressed = check_if_file_zstd_compressed(import_f)
 
             # Copying differently depending on whether the input is compressed and whether output should be compressed
             if import_compressed == export_compressed:
                 # 1) Compression-states match (both input and output are compressed / uncompressed) -> Simple copying
-                try:
-                    shutil.copy2(import_filename, export_filename)
-                except shutil.SameFileError:
-                    pass  # No need to copy if we're working in-place
+                copy_file_silently(import_filename, export_filename)
             else:
                 with open(export_filename, 'wb') as export_f:
                     # 2) Compression-states do NOT match (compression / decompression is required with copying)
@@ -339,6 +341,16 @@ def clone_and_index(entity, new_key):
     new_entity = entity.clone()
     new_entity[field_schema.id] = new_key
     return new_entity
+
+def copy_file_silently(original_filename, new_filename):
+    try:
+        shutil.copy2(original_filename, new_filename)
+    except shutil.SameFileError:
+        pass  # No need to copy if we're working in-place
+
+# 
+# ZSTD values and utilities
+# 
 
 # Magic-numbers that every ZSTD-file header starts with
 #   -> Allows determining whether a file is ZSTD-compressed or not

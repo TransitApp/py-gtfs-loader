@@ -8,3 +8,5 @@
 tests/.work/
 build/
 dist/
+data/
+.venv/

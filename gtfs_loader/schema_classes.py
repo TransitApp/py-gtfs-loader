@@ -5,6 +5,7 @@ Field = namedtuple('Field', ('type', 'required', 'default'))
 
 
 CSV_EXTENSION = '.txt'
+GEOJSON_EXTENSION = '.geojson'
 
 class FileType(IntEnum):
     CSV = 0
@@ -67,7 +68,7 @@ class File(Schema):
             return CSV_EXTENSION
 
         if fileType is FileType.GEOJSON:
-            return ".geojson"
+            return GEOJSON_EXTENSION
 
 
 class FileCollection:

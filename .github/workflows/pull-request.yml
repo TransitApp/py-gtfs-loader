@@ -1,32 +1,24 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: Build on pull request
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-test:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['3.10', 'pypy3.10']
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Install uv
-      uses: astral-sh/setup-uv@v5
-    - name: Set up Python ${{ matrix.python-version }}
-      run: uv python install ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: uv sync --all-extras --dev
-    - name: Lint with flake8
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+    - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+    - run: uv python install ${{ matrix.python-version }}
+    - run: uv sync --all-extras --dev
+    - name: Lint
       run: |
         uv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.venv
         uv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv
-    - name: Test with pytest
-      run: uv run pytest .
+    - run: uv run pytest .

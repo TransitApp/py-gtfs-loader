@@ -1,52 +1,76 @@
-name: Publish to PyPI
+name: Release and Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch: {}
 
 jobs:
-  publish:
+  check-version:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+    outputs:
+      version-changed: ${{ steps.check.outputs.changed }}
+      version: ${{ steps.version.outputs.version }}
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v5
-
-    - name: Check if version changed
-      id: version_check
+    - name: Get current version
+      id: version
       run: |
-        VERSION=$(grep -E '^version = ' pyproject.toml | cut -d'"' -f2)
+        VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-        if git diff HEAD^ HEAD -- pyproject.toml | grep -q 'version ='; then
+    - name: Check if version changed
+      id: check
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        CURRENT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+        LAST_RELEASE_VERSION=$(gh release list --limit 1 --json tagName --jq '.[0].tagName // "v0.0.0"' | sed 's/^v//')
+
+        echo "Current version: $CURRENT_VERSION"
+        echo "Last release version: $LAST_RELEASE_VERSION"
+
+        if [ "$CURRENT_VERSION" != "$LAST_RELEASE_VERSION" ]; then
           echo "changed=true" >> $GITHUB_OUTPUT
         else
           echo "changed=false" >> $GITHUB_OUTPUT
         fi
 
-    - name: Build package
-      if: steps.version_check.outputs.changed == 'true'
-      run: uv build
+  release:
+    needs: check-version
+    if: needs.check-version.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+    - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+
+    - run: uv sync --dev
+
+    - run: uv run pytest .
+
+    - run: uv build
 
     - name: Publish to PyPI
-      if: steps.version_check.outputs.changed == 'true'
-      env:
-        UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      run: uv publish
+      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
 
-    - name: Create GitHub Release
-      if: steps.version_check.outputs.changed == 'true'
+    - name: Tag and release
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        VERSION=${{ steps.version_check.outputs.version }}
-        gh release create "v$VERSION" \
-          --title "v$VERSION" \
+        VERSION="v${{ needs.check-version.outputs.version }}"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git tag "$VERSION"
+        git push --tags
+        gh release create "$VERSION" \
+          --title "Release $VERSION" \
           --generate-notes \
           dist/*

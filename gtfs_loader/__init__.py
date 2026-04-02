@@ -1,12 +1,16 @@
 import csv
 import enum
 import json
-import os
 import shutil
 import typing
+from io import TextIOWrapper
+from zstandard import ZstdDecompressor, ZstdCompressor
 from pathlib import Path
 from . import schema_classes, types, schema
 
+# Exact codecs to use for encoding / decoding the files on import / export
+UTF_8_ENCODING_FOR_IMPORT = 'utf-8-sig'
+UTF_8_ENCODING_FOR_EXPORT = 'utf-8'
 
 class ParseError(ValueError):
     pass
@@ -42,36 +46,44 @@ def load(gtfs_dir, sorted_read=False, files=None, verbose=True, itineraries=Fals
 
     return gtfs
 
-
 def load_csv(gtfs, filepath, file_schema, sorted_read=False):
-    with open(filepath, 'r', encoding='utf-8-sig') as f:
-        reader = csv.reader(f, skipinitialspace=True)
-        header_row = next(reader, None)
-        if not header_row:
-            if file_schema.required:
-                raise ParseError(
-                    f'{file_schema.filename}: required file is empty')
-            else:
-                return
-
-        resolved_fields = merge_header_and_declared_fields(
-            file_schema, header_row)
-        entities = {}
-        for entity in parse_rows(gtfs, file_schema, resolved_fields,
-                                 header_row, reader):
-            index_entity(file_schema, entities, entity)
-
-        if sorted_read:
-            processed_entities = sorted_entities(file_schema, entities)
+    with open(filepath, 'rb') as file_reader:
+        # Either reading from a ZSTD-decompressor or from the file directly
+        # Important: No need to wrap into a with-statement - Closed automatically by the text-reader (Cascading close-calls)
+        if check_if_file_zstd_compressed(file_reader):
+            raw_reader = ZstdDecompressor().stream_reader(file_reader, closefd=True)
         else:
-            processed_entities = entities.items()
+            raw_reader = file_reader
+        
+        # Regardless of whether reading from file directly or from a ZSTD stream, the data needs to be decoded to UTF8
+        with TextIOWrapper(raw_reader, encoding=UTF_8_ENCODING_FOR_IMPORT) as text_reader:
+            csv_reader = csv.reader(text_reader, skipinitialspace=True)
+            header_row = next(csv_reader, None)
+            if not header_row:
+                if file_schema.required:
+                    raise ParseError(
+                        f'{file_schema.filename}: required file is empty')
+                else:
+                    return
 
-        gtfs[file_schema.name] = types.EntityDict(fields=resolved_fields,
-                                                  values=processed_entities)
+            resolved_fields = merge_header_and_declared_fields(
+                file_schema, header_row)
+            entities = {}
+            for entity in parse_rows(gtfs, file_schema, resolved_fields,
+                                    header_row, csv_reader):
+                index_entity(file_schema, entities, entity)
+
+            if sorted_read:
+                processed_entities = sorted_entities(file_schema, entities)
+            else:
+                processed_entities = entities.items()
+
+            gtfs[file_schema.name] = types.EntityDict(fields=resolved_fields,
+                                                      values=processed_entities)
 
 
 def load_json(gtfs, filepath, file_schema):
-    with open(filepath, 'r', encoding='utf-8-sig') as f:
+    with open(filepath, 'r', encoding=UTF_8_ENCODING_FOR_IMPORT) as f:
         json_data = json.load(f)
 
         gtfs[file_schema.name] = visit_json(json_data, file_schema.class_def())
@@ -221,17 +233,19 @@ def sorted_entities(file_schema, entities):
     return sorted(entities.items(), key=lambda kv: kv[0])
 
 
-def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verbose=True, itineraries=False):
+def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verbose=True, itineraries=False, export_compressed=False):
     gtfs_in_dir = Path(gtfs_in_dir)
     gtfs_out_dir = Path(gtfs_out_dir)
     gtfs_out_dir.mkdir(parents=True, exist_ok=True)
 
-    for original_filename in gtfs_in_dir.iterdir():
-        try:
-            shutil.copy2(original_filename,
-                         gtfs_out_dir / original_filename.name)
-        except shutil.SameFileError:
-            pass  # No need to copy if we're working in-place
+    for import_filename in gtfs_in_dir.iterdir():
+        export_filename = gtfs_out_dir / import_filename.name
+
+        # Copying non-CSV files without extra logic (Should not be compressed in the first place)
+        if not import_filename.name.endswith(schema_classes.CSV_EXTENSION):
+            copy_file_silently(import_filename, export_filename)
+        else:
+            copy_csv(import_filename, export_filename, export_compressed)
 
     files_to_patch = get_files(files) if files else schema.GTFS_SUBSET_SCHEMA_ITINERARIES.values() if itineraries else schema.GTFS_SUBSET_SCHEMA.values()
 
@@ -244,12 +258,31 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verb
             continue
 
         if file_schema.fileType is schema_classes.FileType.CSV:
-            save_csv(file_schema, entities, gtfs_out_dir, sorted_output)
+            save_csv(file_schema, entities, gtfs_out_dir, sorted_output, export_compressed)
         elif file_schema.fileType is schema_classes.FileType.GEOJSON:
             save_json(file_schema, entities, gtfs_out_dir)
 
 
-def save_csv(file_schema, entities, gtfs_out_dir, sorted_output=False):
+def copy_csv(import_filename, export_filename, export_compressed = False):
+    with open(import_filename, 'rb') as import_f:
+        import_compressed = check_if_file_zstd_compressed(import_f)
+
+        # Copying differently depending on whether the input is compressed and whether output should be compressed
+        if import_compressed == export_compressed:
+            # 1) Compression-states match (both input and output are compressed / uncompressed) -> Simple copying
+            copy_file_silently(import_filename, export_filename)
+        else:
+            with open(export_filename, 'wb') as export_f:
+                # 2) Compression-states do NOT match (compression / decompression is required with copying)
+                if import_compressed:
+                    # 2.1) Input is compressed, but output should not be compressed -> Copying with decompression
+                    ZstdDecompressor().copy_stream(import_f, export_f)
+                else:
+                    # 2.2) Input is uncompressed, but output should be compressed -> Copying with compression
+                    ZstdCompressor(**ZSTD_COMPRESSION_SETTINGS).copy_stream(import_f, export_f)
+
+
+def save_csv(file_schema, entities, gtfs_out_dir, sorted_output=False, export_compressed=False):
     if sorted_output:
         processed_entities = dict(sorted_entities(file_schema, entities))
     else:
@@ -258,16 +291,24 @@ def save_csv(file_schema, entities, gtfs_out_dir, sorted_output=False):
     flat_entities = flatten_entities(file_schema, processed_entities)
     fields = entities._resolved_fields
 
-    with open(gtfs_out_dir / (file_schema.filename), 'w', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow(fields.keys())
-        for entity in flat_entities:
-            writer.writerow(
-                types.serialize(entity.get(name, '')) for name in fields)
+    with open(gtfs_out_dir / (file_schema.filename), 'wb') as file_writer:
+        # Important: No need to wrap into a with-statement - Closed automatically by the text-writer (Cascading close-calls)
+        if export_compressed:
+            raw_writer = ZstdCompressor(**ZSTD_COMPRESSION_SETTINGS).stream_writer(file_writer, closefd=True)
+        else:
+            raw_writer = file_writer
+
+        # Using with-statement is necessary for proper flushing and closing on finishing
+        with TextIOWrapper(raw_writer, encoding=UTF_8_ENCODING_FOR_EXPORT) as text_writer:
+            csv_writer = csv.writer(text_writer)
+            csv_writer.writerow(fields.keys())
+            for entity in flat_entities:
+                csv_writer.writerow(
+                    types.serialize(entity.get(name, '')) for name in fields)
 
 
 def save_json(file_schema, entities, gtfs_out_dir):
-    with open(gtfs_out_dir / (file_schema.filename), 'w', encoding='utf-8') as f:
+    with open(gtfs_out_dir / (file_schema.filename), 'w', encoding=UTF_8_ENCODING_FOR_EXPORT) as f:
         f.write(json.dumps(entities, indent=4, default=vars))
 
 
@@ -302,3 +343,32 @@ def clone_and_index(entity, new_key):
     new_entity = entity.clone()
     new_entity[field_schema.id] = new_key
     return new_entity
+
+def copy_file_silently(original_filename, new_filename):
+    try:
+        shutil.copy2(original_filename, new_filename)
+    except shutil.SameFileError:
+        pass  # No need to copy if we're working in-place
+
+# 
+# ZSTD values and utilities
+# 
+
+# Magic-numbers that every ZSTD-file header starts with
+#   -> Allows determining whether a file is ZSTD-compressed or not
+ZSTD_HEADER_MAGIC_NUMBER = bytearray([0x28, 0xB5, 0x2F, 0xFD])
+
+# Settings to use for compression
+ZSTD_COMPRESSION_SETTINGS = { 'level': 3 }
+
+# Important: Expects file to be opened in binary-mode
+def check_if_file_zstd_compressed(f):
+    header_magic_number_bytes = f.read(4)
+
+    is_zstd_compressed = header_magic_number_bytes == ZSTD_HEADER_MAGIC_NUMBER
+
+    # Seek to the start of the file (0-offset from the start / 0-whence)
+    #   -> Allowing reading as if nothing happened
+    f.seek(0, 0)
+
+    return is_zstd_compressed

@@ -4,6 +4,9 @@ from enum import IntEnum
 Field = namedtuple('Field', ('type', 'required', 'default'))
 
 
+CSV_EXTENSION = '.txt'
+GEOJSON_EXTENSION = '.geojson'
+
 class FileType(IntEnum):
     CSV = 0
     GEOJSON = 1
@@ -62,10 +65,10 @@ class File(Schema):
     @staticmethod
     def _get_file_ext(fileType):
         if fileType is FileType.CSV:
-            return ".txt"
+            return CSV_EXTENSION
 
         if fileType is FileType.GEOJSON:
-            return ".geojson"
+            return GEOJSON_EXTENSION
 
 
 class FileCollection:

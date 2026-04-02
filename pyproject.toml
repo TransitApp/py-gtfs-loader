@@ -1,6 +1,6 @@
 [project]
 name = "py-gtfs-loader"
-version = "0.3.3"
+version = "0.4.0"
 description = "Load GTFS"
 readme = "README.md"
 authors = [
@@ -8,7 +8,9 @@ authors = [
     { name = "Jeremy Steele" }
 ]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "zstandard>=0.25.0"
+]
 license = { text = "MIT" }
 classifiers = [
     "License :: OSI Approved :: MIT License",

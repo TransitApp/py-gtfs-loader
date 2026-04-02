@@ -244,25 +244,8 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verb
         # Copying non-CSV files without extra logic (Should not be compressed in the first place)
         if not import_filename.name.endswith(schema_classes.CSV_EXTENSION):
             copy_file_silently(import_filename, export_filename)
-            continue
-
-        with open(import_filename, 'rb') as import_f:
-            import_compressed = check_if_file_zstd_compressed(import_f)
-
-            # Copying differently depending on whether the input is compressed and whether output should be compressed
-            if import_compressed == export_compressed:
-                # 1) Compression-states match (both input and output are compressed / uncompressed) -> Simple copying
-                copy_file_silently(import_filename, export_filename)
-            else:
-                with open(export_filename, 'wb') as export_f:
-                    # 2) Compression-states do NOT match (compression / decompression is required with copying)
-                    if import_compressed:
-                        # 2.1) Input is compressed, but output should not be compressed -> Copying with decompression
-                        ZstdDecompressor().copy_stream(import_f, export_f)
-                    else:
-                        # 2.2) Input is uncompressed, but output should be compressed -> Copying with compression
-                        ZstdCompressor(**ZSTD_COMPRESSION_SETTINGS).copy_stream(import_f, export_f)
-
+        else:
+            copy_csv(import_filename, export_filename, export_compressed)
 
     files_to_patch = get_files(files) if files else schema.GTFS_SUBSET_SCHEMA_ITINERARIES.values() if itineraries else schema.GTFS_SUBSET_SCHEMA.values()
 
@@ -278,6 +261,25 @@ def patch(gtfs, gtfs_in_dir, gtfs_out_dir, files=None, sorted_output=False, verb
             save_csv(file_schema, entities, gtfs_out_dir, sorted_output, export_compressed)
         elif file_schema.fileType is schema_classes.FileType.GEOJSON:
             save_json(file_schema, entities, gtfs_out_dir)
+
+
+def copy_csv(import_filename, export_filename, export_compressed = False):
+    with open(import_filename, 'rb') as import_f:
+        import_compressed = check_if_file_zstd_compressed(import_f)
+
+        # Copying differently depending on whether the input is compressed and whether output should be compressed
+        if import_compressed == export_compressed:
+            # 1) Compression-states match (both input and output are compressed / uncompressed) -> Simple copying
+            copy_file_silently(import_filename, export_filename)
+        else:
+            with open(export_filename, 'wb') as export_f:
+                # 2) Compression-states do NOT match (compression / decompression is required with copying)
+                if import_compressed:
+                    # 2.1) Input is compressed, but output should not be compressed -> Copying with decompression
+                    ZstdDecompressor().copy_stream(import_f, export_f)
+                else:
+                    # 2.2) Input is uncompressed, but output should be compressed -> Copying with compression
+                    ZstdCompressor(**ZSTD_COMPRESSION_SETTINGS).copy_stream(import_f, export_f)
 
 
 def save_csv(file_schema, entities, gtfs_out_dir, sorted_output=False, export_compressed=False):
